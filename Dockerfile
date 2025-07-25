@@ -1,27 +1,23 @@
-# 1. Используем официальный PHP-образ
-FROM php:8.2-cli
+# Используем официальный PHP-образ
+FROM php:8.3-apache
 
-# 2. Устанавливаем необходимые расширения
-RUN apt-get update && apt-get install -y \
-    curl \
-    unzip \
-    git \
-    && docker-php-ext-install sockets
+# Копируем файлы проекта в контейнер
+COPY . /var/www/html/
 
-# 3. Копируем файлы проекта внутрь контейнера
-WORKDIR /app
-COPY . .
+# Устанавливаем рабочую директорию
+WORKDIR /var/www/html/
 
-# 4. Устанавливаем зависимости, если используешь composer
-# (если не используешь — удали этот шаг)
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install --no-dev --optimize-autoloader || true
+# Включаем mod_rewrite (если нужно .htaccess)
+RUN a2enmod rewrite
 
-# 5. Указываем порт и команду запуска
+# Устанавливаем Composer, если он используется
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Установка зависимостей
+RUN composer install || true
+
+# Обеспечиваем, что папка public используется как DocumentRoot
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
+
+# Открываем порт
 EXPOSE 80
-
-# Если index.php находится в корне:
-CMD ["php", "-S", "0.0.0.0:80", "index.php"]
-
-# Если index.php в public/ — поменяй строку выше на:
-# CMD ["php", "-S", "0.0.0.0:80", "-t", "public"]
