@@ -1,8 +1,0 @@
-.osp
-.git
-vendor/
-node_modules/
-*.logcls
-.env
-.idea/
-.vscode/
