@@ -5,10 +5,10 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 'on');
 ini_set('error_log', __DIR__ . '/errors.log');
 
-require_once 'config.php';
+// require_once 'config.php';
 require_once 'functions.php';
 
-// var_dump(BASE_URL . 'setWebhook?url=https://immigrantnz.info/bots/1/');
+// var_dump(BASE_URL . 'setWebhook?url=https://tgbotphp.onrender.com/');
 
 $update = json_decode(file_get_contents('php://input'));
 
