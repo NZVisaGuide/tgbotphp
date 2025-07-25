@@ -1,12 +1,15 @@
-# Включаем модуль переписывания
 RewriteEngine On
+RewriteBase /
 
-# Пример редиректа на index.php (если это SPA или роутинг через PHP)
+# Исключаем index.php, существующие файлы и директории
+RewriteCond %{REQUEST_URI} !^/index\.php$
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+
+# Перенаправляем на index.php
 RewriteRule ^ index.php [QSA,L]
 
-# Установка заголовков безопасности
+# Безопасность
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "SAMEORIGIN"
