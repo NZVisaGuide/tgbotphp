@@ -1,0 +1,5 @@
+.git
+.osp
+vendor
+node_modules
+*.log

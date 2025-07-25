@@ -1,31 +1,29 @@
-# Используем официальный PHP с Apache
+# Используем официальный образ PHP с Apache
 FROM php:8.2-apache
 
-# Устанавливаем необходимые зависимости
+# Устанавливаем необходимые пакеты и расширения PHP
 RUN apt-get update && apt-get install -y \
-    libzip-dev unzip git curl \
-    && docker-php-ext-install zip
+    zip unzip git curl libzip-dev libonig-dev \
+    && docker-php-ext-install zip mbstring
 
-# Устанавливаем Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Включаем mod_rewrite
+RUN a2enmod rewrite
+
+# Копируем файлы проекта внутрь контейнера
+COPY . /var/www/html/
 
 # Устанавливаем рабочую директорию
 WORKDIR /var/www/html
 
-# Копируем все файлы в контейнер
-COPY . /var/www/html
+# Устанавливаем зависимости composer, если есть composer.json
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+RUN if [ -f composer.json ]; then composer install; fi
 
-# Настраиваем DocumentRoot на /public
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
-    && sed -i 's|<Directory /var/www/>|<Directory /var/www/html/public>|g' /etc/apache2/apache2.conf \
-    && a2enmod rewrite headers
+# Настройки Apache (если нужно)
+COPY ./public/.htaccess /var/www/html/public/.htaccess
 
-# Устанавливаем зависимости из composer.json
-RUN composer install --no-dev --optimize-autoloader
-
-# Настраиваем права
+# Разрешаем Apache доступ к public/
 RUN chown -R www-data:www-data /var/www/html
 
-EXPOSE 80
-
-CMD ["apache2-foreground"]
+# Указываем, что DocumentRoot будет в /var/www/html/public
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf

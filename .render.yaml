@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: my-php-bot
+    env: docker
+    repo: https://github.com/yourusername/yourrepo
+    region: frankfurt
+    plan: free
+    branch: main
+    dockerfilePath: Dockerfile
+    buildCommand: ""
+    startCommand: apache2-foreground
