@@ -1,23 +1,21 @@
-# Используем официальный PHP-образ
 FROM php:8.3-apache
 
-# Копируем файлы проекта в контейнер
-COPY . /var/www/html/
-
-# Устанавливаем рабочую директорию
-WORKDIR /var/www/html/
-
-# Включаем mod_rewrite (если нужно .htaccess)
-RUN a2enmod rewrite
-
-# Устанавливаем Composer, если он используется
+# Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Установка зависимостей
-RUN composer install || true
+# Копируем проект
+COPY . /var/www/html/
 
-# Обеспечиваем, что папка public используется как DocumentRoot
+# Переключаем рабочую директорию
+WORKDIR /var/www/html/
+
+# Включаем нужные модули Apache
+RUN a2enmod rewrite headers
+
+# Обновляем DocumentRoot на public/
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
-# Открываем порт
+# Устанавливаем зависимости
+RUN composer install || true
+
 EXPOSE 80
